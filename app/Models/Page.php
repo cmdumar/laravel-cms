@@ -9,8 +9,10 @@ class Page extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = [
-        'title',
-        'body'
-    ];
+    protected $fillable = ['title', 'body'];
+
+    public function mediaFiles()
+    {
+        return $this->belongsToMany(MediaFile::class, 'page_media');
+    }
 }

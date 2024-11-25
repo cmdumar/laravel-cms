@@ -57,4 +57,23 @@ class PageService
     {
         return $this->pageRepository->deletePage($pageId);
     }
+
+    public function attachMedia($pageId, $mediaId)
+    {
+        $page = $this->pageRepository->getPageById($pageId);
+        $page->mediaFiles()->attach($mediaId);
+        return $page->fresh('mediaFiles');
+    }
+
+    public function detachMedia($pageId, $mediaId)
+    {
+        $page = $this->pageRepository->getPageById($pageId);
+        $page->mediaFiles()->detach($mediaId);
+        return $page->fresh('mediaFiles');
+    }
+
+    public function getPageWithMedia($pageId)
+    {
+        return $this->pageRepository->getPageById($pageId)->load('mediaFiles');
+    }
 }

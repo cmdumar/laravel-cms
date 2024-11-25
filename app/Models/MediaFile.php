@@ -21,4 +21,9 @@ class MediaFile extends Model
     {
         return $this->hasMany(MediaSlug::class);
     }
+
+    public function pages()
+    {
+        return $this->belongsToMany(Page::class, 'page_media');
+    }
 }
