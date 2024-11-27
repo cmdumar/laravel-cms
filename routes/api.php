@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\MediaController;
+use App\Http\Controllers\Api\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +14,8 @@ use App\Http\Controllers\Api\MediaController;
 
 Route::prefix('v1')->group(function () {
     Route::apiResource('pages', PageController::class);
+
+    // Route::post('login', [AuthController::class, 'login']);
 
     // Media routes
     Route::get('media', [MediaController::class, 'index']);
@@ -24,3 +27,5 @@ Route::prefix('v1')->group(function () {
     Route::post('pages/{id}/media', [PageController::class, 'attachMedia']);
     Route::delete('pages/{id}/media', [PageController::class, 'detachMedia']);
 });
+
+Route::post('login', [AuthController::class, 'login']);
