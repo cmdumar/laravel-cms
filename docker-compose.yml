@@ -1,0 +1,42 @@
+services:
+  laravel:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - FILESYSTEM_DRIVER=samba
+      - SMB_HOST=samba
+      - SMB_SHARE=share
+      - SMB_USERNAME=smbuser
+      - SMB_PASSWORD=smbpass
+    volumes:
+        - .:/var/www/html
+        - samba_data:/share
+        - ./storage/app/public:/var/www/html/public/storage
+    depends_on:
+      - db
+      - samba
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: cms_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: cms_user
+      MYSQL_PASSWORD: cms_password
+    ports:
+      - "3306:3306"
+
+  samba:
+    image: dperson/samba
+    ports:
+      - "445:445"
+    environment:
+      - USER=smbuser;smbpass
+      - SHARE=share;/share;yes;no;no;all;none
+    volumes:
+      - samba_data:/share
+
+volumes:
+  samba_data:

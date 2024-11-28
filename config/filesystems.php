@@ -44,6 +44,13 @@ return [
             'visibility' => 'public',
         ],
 
+        'samba' => [
+            'driver' => 'local',
+            'root' => '/share',
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
