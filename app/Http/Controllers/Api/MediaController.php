@@ -69,31 +69,24 @@ class MediaController extends Controller
     {
         try {
             $file = $this->mediaService->getFileById($id);
-            return response()->json([
-                'status' => 'success',
-                'data' => $file
-            ], Response::HTTP_OK);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
-        }
-    }
+            $mediaUrl = $file->getFirstMediaUrl('files');
 
-    public function getBySlug($slug)
-    {
-        try {
-            $file = $this->mediaService->getFileBySlug($slug);
             return response()->json([
                 'status' => 'success',
-                'data' => $file
-            ], Response::HTTP_OK);
+                'data' => [
+                    'id' => $file->id,
+                    'original_name' => $file->original_name,
+                    'mime_type' => $file->mime_type,
+                    'file_size' => $file->file_size,
+                    'url' => $mediaUrl,
+                    'slugs' => $file->slugs
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            ], 404);
         }
     }
 
@@ -108,19 +101,38 @@ class MediaController extends Controller
                 return response()->json([
                     'status' => 'error',
                     'message' => $validator->errors()
-                ], Response::HTTP_BAD_REQUEST);
+                ], 400);
             }
 
-            $slug = $this->mediaService->addSlugToFile($id, $request->input('slug'));
+            $slug = $this->mediaService->addSlugToFile($id, $request->slug);
+
             return response()->json([
                 'status' => 'success',
                 'data' => $slug
-            ], Response::HTTP_OK);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage()
-            ], Response::HTTP_BAD_REQUEST);
+            ], 500);
+        }
+    }
+
+    // Add method to get file by slug
+    public function getBySlug($slug)
+    {
+        try {
+            $mediaFile = $this->mediaService->getFileBySlug($slug);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $mediaFile
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'File not found'
+            ], 404);
         }
     }
 

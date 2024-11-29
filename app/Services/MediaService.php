@@ -25,33 +25,31 @@ class MediaService
     public function uploadFile(UploadedFile $file, ?string $customSlug = null)
     {
         try {
-            // Generate a unique filename
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-
-            // Store file locally (we'll change this to Samba later)
-            $path = $file->store('uploads', 'public');
-
-            if (!$path) {
-                throw new \Exception('Failed to store file');
-            }
-
-            // Create media file record
+            // Create media file record first
             $mediaFile = $this->mediaRepository->createFile([
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
-                'file_path' => $path,
-                'file_size' => $file->getSize(),
+                'file_size' => $file->getSize(), // Temporary value, will be updated after Spatie processes it
             ]);
 
-            // Add slug if provided, otherwise use UUID
-            $slug = $customSlug ?? Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '-' . Str::random(6));
-            $this->mediaRepository->addSlugToFile($mediaFile->id, $slug);
+            // Add to Spatie media library
+            $media = $mediaFile->addMedia($file)
+                ->toMediaCollection('files');
+
+            // Update file path with Spatie's path
+            $mediaFile->update([
+                'file_path' => $media->getPath()
+            ]);
+
+            // Add slug if provided
+            if ($customSlug) {
+                $this->mediaRepository->addSlugToFile($mediaFile->id, $customSlug);
+            }
 
             return $mediaFile->fresh('slugs');
         } catch (\Exception $e) {
-            // If anything fails, attempt to remove the file if it was uploaded
-            if (isset($path) && Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
+            if (isset($mediaFile)) {
+                $mediaFile->delete();
             }
             throw $e;
         }
@@ -59,7 +57,15 @@ class MediaService
 
     public function getFileById($id)
     {
-        return $this->mediaRepository->getFileById($id);
+        $file = $this->mediaRepository->getFileById($id);
+        return $file->load('media');
+    }
+
+    public function deleteFile($id)
+    {
+        $file = $this->mediaRepository->getFileById($id);
+        $file->clearMediaCollection('files');
+        return $this->mediaRepository->deleteFile($id);
     }
 
     public function getFileBySlug($slug)
@@ -76,15 +82,15 @@ class MediaService
         return $this->mediaRepository->addSlugToFile($fileId, $slug);
     }
 
-    public function deleteFile($id)
-    {
-        $file = $this->mediaRepository->getFileById($id);
+    // public function deleteFile($id)
+    // {
+    //     $file = $this->mediaRepository->getFileById($id);
 
-        // Delete from local storage
-        if (Storage::disk('public')->exists($file->file_path)) {
-            Storage::disk('public')->delete($file->file_path);
-        }
+    //     // Delete from local storage
+    //     if (Storage::disk('public')->exists($file->file_path)) {
+    //         Storage::disk('public')->delete($file->file_path);
+    //     }
 
-        return $this->mediaRepository->deleteFile($id);
-    }
+    //     return $this->mediaRepository->deleteFile($id);
+    // }
 }

@@ -1,0 +1,28 @@
+type Query {
+    page(id: ID! @eq): Page @find
+    pages: [Page!]! @all
+    mediaFiles: [MediaFile!]! @all
+}
+
+type Page {
+    id: ID!
+    title: String!
+    body: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type MediaFile {
+    id: ID!
+    original_name: String!
+    mime_type: String!
+    file_path: String!
+    file_size: Int!
+    created_at: DateTime!
+    slugs: [MediaSlug!]! @hasMany
+}
+
+type MediaSlug {
+    id: ID!
+    slug: String!
+}
