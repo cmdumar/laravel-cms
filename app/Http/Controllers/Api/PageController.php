@@ -42,9 +42,15 @@ class PageController extends Controller
     {
         try {
             $page = $this->pageService->getPageById($id);
-            return response()->json(['status' => 'success', 'data' => $page], Response::HTTP_OK);
+            return response()->json([
+                'status' => 'success',
+                'data' => $page
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], Response::HTTP_NOT_FOUND);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Page not found'
+            ], 404);
         }
     }
 
