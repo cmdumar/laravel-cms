@@ -11,9 +11,9 @@ services:
       - SMB_USERNAME=smbuser
       - SMB_PASSWORD=smbpass
     volumes:
-        - .:/var/www/html
-        - samba_data:/share
-        - ./storage/app/public:/var/www/html/public/storage
+      - .:/var/www/html
+      - samba_data:/share/media
+      - ./storage/app/public:/var/www/html/public/storage
     depends_on:
       - db
       - samba
@@ -34,7 +34,7 @@ services:
       - "445:445"
     environment:
       - USER=smbuser;smbpass
-      - SHARE=share;/share;yes;no;no;all;none
+      - SHARE=media;/share/media;yes;yes;yes;all;none
     volumes:
       - samba_data:/share
 

@@ -22,10 +22,11 @@ Route::prefix('v1')->group(function () {
     Route::post('media', [MediaController::class, 'store']);
     Route::get('media/{id}', [MediaController::class, 'show']);
     Route::delete('media/{id}', [MediaController::class, 'destroy']);
-    Route::get('media/slug/{slug}', [MediaController::class, 'getBySlug']);
     Route::post('media/{id}/slug', [MediaController::class, 'addSlug']);
+    Route::get('media/slug/{slug}', [MediaController::class, 'getBySlug']);
+    Route::get('pages/{id}', [PageController::class, 'show']);
     Route::post('pages/{id}/media', [PageController::class, 'attachMedia']);
     Route::delete('pages/{id}/media', [PageController::class, 'detachMedia']);
 });
-
+Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);

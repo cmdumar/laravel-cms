@@ -46,8 +46,8 @@ return [
 
         'samba' => [
             'driver' => 'local',
-            'root' => '/share',
-            'url' => env('APP_URL').'/storage',
+            'root' => env('SMB_MOUNT_POINT', '/share/media'),
+            'url' => env('APP_URL').'/media',
             'visibility' => 'public',
         ],
 

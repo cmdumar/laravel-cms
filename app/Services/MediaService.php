@@ -25,17 +25,15 @@ class MediaService
     public function uploadFile(UploadedFile $file, ?string $customSlug = null)
     {
         try {
-            // Generate a unique filename
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-            // Store file locally (we'll change this to Samba later)
-            $path = $file->store('uploads', 'public');
+            // Store directly in /share/media without 'uploads' subdirectory
+            $path = $file->storeAs('', $filename, 'samba');
 
             if (!$path) {
-                throw new \Exception('Failed to store file');
+                throw new \Exception('Failed to store file on Samba');
             }
 
-            // Create media file record
             $mediaFile = $this->mediaRepository->createFile([
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
@@ -43,15 +41,14 @@ class MediaService
                 'file_size' => $file->getSize(),
             ]);
 
-            // Add slug if provided, otherwise use UUID
-            $slug = $customSlug ?? Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '-' . Str::random(6));
-            $this->mediaRepository->addSlugToFile($mediaFile->id, $slug);
+            if ($customSlug) {
+                $this->mediaRepository->addSlugToFile($mediaFile->id, $customSlug);
+            }
 
             return $mediaFile->fresh('slugs');
         } catch (\Exception $e) {
-            // If anything fails, attempt to remove the file if it was uploaded
-            if (isset($path) && Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
+            if (isset($path) && Storage::disk('samba')->exists($path)) {
+                Storage::disk('samba')->delete($path);
             }
             throw $e;
         }

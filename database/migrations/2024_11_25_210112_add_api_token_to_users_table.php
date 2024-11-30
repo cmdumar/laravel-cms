@@ -15,8 +15,12 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('api_token');
-        });
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('api_token');
+            });
+        } else {
+            // Handle SQLite specific logic, like using the workaround
+        }
     }
 };
