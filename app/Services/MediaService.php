@@ -25,20 +25,11 @@ class MediaService
     public function uploadFile(UploadedFile $file, ?string $customSlug = null)
     {
         try {
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-
-            // Store directly in /share/media without 'uploads' subdirectory
-            $path = $file->storeAs('', $filename, 'samba');
-
-            if (!$path) {
-                throw new \Exception('Failed to store file on Samba');
-            }
-
+            // Create media file record first
             $mediaFile = $this->mediaRepository->createFile([
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
-                'file_path' => $path,
-                'file_size' => $file->getSize(),
+                'file_size' => $file->getSize(), // Temporary value, will be updated after Spatie processes it
             ]);
 
             if ($customSlug) {
@@ -56,7 +47,15 @@ class MediaService
 
     public function getFileById($id)
     {
-        return $this->mediaRepository->getFileById($id);
+        $file = $this->mediaRepository->getFileById($id);
+        return $file->load('media');
+    }
+
+    public function deleteFile($id)
+    {
+        $file = $this->mediaRepository->getFileById($id);
+        $file->clearMediaCollection('files');
+        return $this->mediaRepository->deleteFile($id);
     }
 
     public function getFileBySlug($slug)
@@ -73,15 +72,15 @@ class MediaService
         return $this->mediaRepository->addSlugToFile($fileId, $slug);
     }
 
-    public function deleteFile($id)
-    {
-        $file = $this->mediaRepository->getFileById($id);
+    // public function deleteFile($id)
+    // {
+    //     $file = $this->mediaRepository->getFileById($id);
 
-        // Delete from local storage
-        if (Storage::disk('public')->exists($file->file_path)) {
-            Storage::disk('public')->delete($file->file_path);
-        }
+    //     // Delete from local storage
+    //     if (Storage::disk('public')->exists($file->file_path)) {
+    //         Storage::disk('public')->delete($file->file_path);
+    //     }
 
-        return $this->mediaRepository->deleteFile($id);
-    }
+    //     return $this->mediaRepository->deleteFile($id);
+    // }
 }
