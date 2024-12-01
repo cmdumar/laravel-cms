@@ -4,63 +4,118 @@ Make sure you have Docker and Laravel installed locally before running the proje
 
 ### Steps to run  the project
 
-- Install dependencies 
+- Create `.env` and copy all the contents of `.env.example` to it
+- Install dependencies `composer install`
+- Generate key `php artisan key:generate`
+- Run migrations `php artisan migrate`
+- Create Docker network for inter-container communication `docker network create app_network`
+- Start the project `docker-compose up --build`
 
-`composer install`
+### Optional
 
-- Generate key
+1. If you need to reset and re-run all migrations `php artisan migrate:fresh`
 
-`php artisan key:generate`
+2. Create test user
 
-- Run migrations
+`php artisan tinker`
+`User::create(['name' => 'Test User', 'email' => 'test@example.com', 'password' => bcrypt('password123')]);`
 
-`php artisan migrate`
+### Test API
 
-- Create network for Nextjs link
+```bash
+# Login
 
-`docker network create app_network`
+curl -X POST http://localhost:8000/api/login \
+-H "Content-Type: application/json" \
+-d '{"email":"test@example.com","password":"password123"}'
 
-- Start the project
+# Register
 
-`docker-compose up --build`
+```bash
+curl -X POST http://localhost:8000/api/register \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "password123",
+  "password_confirmation": "password123"
+}'
+```
 
-## About Laravel
+### Pages
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+```bash
+# List all pages
+curl -X GET http://localhost:8000/api/v1/pages
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# Get single page
+curl -X GET http://localhost:8000/api/v1/pages/1
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+# Create page
+curl -X POST http://localhost:8000/api/v1/pages \
+-H "Content-Type: application/json" \
+-d '{"title":"Test Page","body":"Test content"}'
 
-## Learning Laravel
+# Update page
+curl -X PUT http://localhost:8000/api/v1/pages/1 \
+-H "Content-Type: application/json" \
+-d '{"title":"Updated Title","body":"Updated content"}'
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+# Delete page
+curl -X DELETE http://localhost:8000/api/v1/pages/1
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Media
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+# List all media
+curl -X GET http://localhost:8000/api/v1/media
 
-## Laravel Sponsors
+# Upload media
+curl -X POST http://localhost:8000/api/v1/media \
+-F "file=@/path/to/file.jpg" \
+-F "slug=custom-slug"
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# Get single media
+curl -X GET http://localhost:8000/api/v1/media/1
 
-## Contributing
+# Delete media
+curl -X DELETE http://localhost:8000/api/v1/media/1
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Add slug to media
+curl -X POST http://localhost:8000/api/v1/media/1/slug \
+-H "Content-Type: application/json" \
+-d '{"slug":"new-slug"}'
 
-## Code of Conduct
+# Get media by slug
+curl -X GET http://localhost:8000/api/v1/media/slug/custom-slug
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Page-Media Relations
 
-## Security Vulnerabilities
+```bash
+# Attach media to page
+curl -X POST http://localhost:8000/api/v1/pages/1/media \
+-H "Content-Type: application/json" \
+-d '{"media_id":1}'
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Detach media from page
+curl -X DELETE http://localhost:8000/api/v1/pages/1/media \
+-H "Content-Type: application/json" \
+-d '{"media_id":1}'
+```
+
+### Dashboard stats
+
+```bash
+# Get dashboard stats
+curl -X GET http://localhost:8000/api/v1/dashboard/stats
+```
+
+Note: For authenticated endpoints, add the Authorization header:
+```bash
+-H "Authorization: Bearer YOUR_TOKEN"
+```
 
 ## License
 
