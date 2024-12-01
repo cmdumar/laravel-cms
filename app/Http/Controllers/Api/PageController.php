@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\PageService;
 use App\Repositories\Interfaces\PageRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 
@@ -58,6 +59,26 @@ class PageController extends Controller
     {
         try {
             $page = $this->pageService->updatePage($id, $request->all());
+
+            // Trigger revalidation in Next.js
+            try {
+                $nextJsUrl = env('NEXTJS_URL', 'http://host.docker.internal:3000');
+
+                $response = Http::post($nextJsUrl . '/api/revalidate', [
+                    'path' => "/{$id}"  // The path that needs to be revalidated
+                ]);
+
+                if (!$response->successful()) {
+                    \Log::warning('Failed to revalidate Next.js cache', [
+                        'status' => $response->status(),
+                        'body' => $response->body()
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Log the error but don't fail the update
+                \Log::error('Error revalidating Next.js cache: ' . $e->getMessage());
+            }
+
             return response()->json(['status' => 'success', 'data' => $page], Response::HTTP_OK);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
@@ -73,8 +94,6 @@ class PageController extends Controller
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
-
-    // app/Http/Controllers/Api/PageController.php
 
     public function attachMedia(Request $request, $id)
     {
