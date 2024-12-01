@@ -64,9 +64,21 @@ class PageController extends Controller
             try {
                 $nextJsUrl = env('NEXTJS_URL', 'http://host.docker.internal:3000');
 
+                // Uncomment the following lines to log the revalidation process
+                // \Log::info('Attempting to revalidate Next.js cache', [
+                //     'url' => $nextJsUrl . '/api/revalidate',
+                //     'path' => "/{$id}"
+                // ]);
+
                 $response = Http::post($nextJsUrl . '/api/revalidate', [
                     'path' => "/{$id}"  // The path that needs to be revalidated
                 ]);
+
+                // Uncomment the following lines to log the revalidation response
+                // \Log::info('Revalidation response', [
+                //     'status' => $response->status(),
+                //     'body' => $response->json()
+                // ]);
 
                 if (!$response->successful()) {
                     \Log::warning('Failed to revalidate Next.js cache', [
