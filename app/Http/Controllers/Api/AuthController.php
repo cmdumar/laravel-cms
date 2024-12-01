@@ -49,7 +49,6 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'api_token' => Str::random(60),
         ]);
-        $user->save();
 
         return response()->json([
             'token' => $user->api_token,

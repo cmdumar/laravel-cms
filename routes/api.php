@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +26,9 @@ Route::prefix('v1')->group(function () {
     Route::get('pages/{id}', [PageController::class, 'show']);
     Route::post('pages/{id}/media', [PageController::class, 'attachMedia']);
     Route::delete('pages/{id}/media', [PageController::class, 'detachMedia']);
+
+    // Dashboard stats
+    Route::get('dashboard/stats', [DashboardController::class, 'stats']);
 });
 
 Route::post('register', [AuthController::class, 'register']);
