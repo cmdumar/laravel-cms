@@ -14,6 +14,8 @@ services:
       - .:/var/www/html
       - samba_data:/share/media
       - ./storage/app/public:/var/www/html/public/storage
+    networks:
+      - app_network
     depends_on:
       - db
       - samba
@@ -27,6 +29,8 @@ services:
       MYSQL_PASSWORD: cms_password
     ports:
       - "3306:3306"
+    networks:
+      - app_network
 
   samba:
     image: dperson/samba
@@ -37,6 +41,12 @@ services:
       - SHARE=media;/share/media;yes;yes;yes;all;none
     volumes:
       - samba_data:/share
+    networks:
+      - app_network
 
 volumes:
-  samba_data:
+    samba_data:
+
+networks:
+    app_network:
+        driver: bridge

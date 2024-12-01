@@ -14,9 +14,6 @@ use App\Http\Controllers\Api\AuthController;
 
 Route::prefix('v1')->group(function () {
     Route::apiResource('pages', PageController::class);
-
-    // Route::post('login', [AuthController::class, 'login']);
-
     // Media routes
     Route::get('media', [MediaController::class, 'index']);
     Route::post('media', [MediaController::class, 'store']);
@@ -24,9 +21,11 @@ Route::prefix('v1')->group(function () {
     Route::delete('media/{id}', [MediaController::class, 'destroy']);
     Route::post('media/{id}/slug', [MediaController::class, 'addSlug']);
     Route::get('media/slug/{slug}', [MediaController::class, 'getBySlug']);
+    // Page routes
     Route::get('pages/{id}', [PageController::class, 'show']);
     Route::post('pages/{id}/media', [PageController::class, 'attachMedia']);
     Route::delete('pages/{id}/media', [PageController::class, 'detachMedia']);
 });
+
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
